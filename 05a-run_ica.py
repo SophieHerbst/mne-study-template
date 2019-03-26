@@ -60,6 +60,12 @@ def run_ica(subject, tsss=config.mf_st_duration):
     raw.set_eeg_reference(projection=True)
     del raw_list
 
+    # apply resampling to raw and events
+    if config.resample_sfreq:
+        print('Resampling.. ')
+        raw, events = raw.resample(config.resample_sfreq, npad='auto',
+                                   events=events)
+
     # produce high-pass filtered version of the data for ICA
     epochs_for_ica = mne.Epochs(raw.copy().filter(l_freq=1., h_freq=None),
                                 events, config.event_id, config.tmin,

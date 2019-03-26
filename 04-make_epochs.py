@@ -65,6 +65,12 @@ def run_epochs(subject):
     picks = mne.pick_types(raw.info, meg=True, eeg=True, stim=True,
                            eog=True, exclude=())
 
+    # apply resampling to raw and events
+    if config.resample_sfreq:
+        print('Resampling.. ')
+        raw, events = raw.resample(config.resample_sfreq, npad='auto',
+                                   events=events)
+
     # Construct metadata from the epochs
     # Add here if you need to attach a pandas dataframe as metadata
     # to your epochs object:
