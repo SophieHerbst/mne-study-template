@@ -55,8 +55,8 @@ The following table provides a concise summary of each step in the pipeline.
 | Script | Description |
 |:-----------|:----------------------------------------------------------|
 | [config.py](config.py) | The only file you need to modify in principle. This file contain all your parameters. |
-| [01-import_and_filter.py](01-import_and_filter.py) | Read raw data and apply lowpass or/and highpass filtering. |
-| [02-apply_maxwell_filter.py](02-apply_maxwell_filter.py) | Run maxfilter and do lowpass filter at 40 Hz. |
+| [01-import_maxwell_filter](01-import_maxwell_filter) | Run maxfilter and do lowpass filter at 40 Hz. |
+| [02-apply_frequency_filter.py](02-apply_frequency_filter.py) | Apply lowpass or/and highpass filtering. |
 | [03-extract_events.py](03-extract_events.py) | Extract events or annotations or markers from the data and save it to disk. Uses events from stimulus channel STI101. |
 | [04-make_epochs.py](04-make_epochs.py) | Extract epochs. |
 | [05a-run_ica.py](05a-run_ica.py) | Run Independant Component Analysis (ICA) for artifact correction. |
