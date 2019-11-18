@@ -80,6 +80,7 @@ def run_forward(subject, session=None):
                          '"{}"'.format(search_str))
 
     bids_fname = op.basename(bids_fname)
+    extra_params = dict(allow_maxshield=True)
     trans = get_head_mri_trans(bids_fname=bids_fname,
                                bids_root=config.bids_root)
 
@@ -90,7 +91,7 @@ def run_forward(subject, session=None):
                                  add_dist=False)
 
     evoked = mne.read_evokeds(fname_evoked, condition=0)
-
+    
     # Here we only use 3-layers BEM only if EEG is available.
     if 'eeg' in config.ch_types or config.kind == 'eeg':
         model = mne.make_bem_model(subject, ico=4,

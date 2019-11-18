@@ -12,12 +12,14 @@ import numpy as np
 from mne_bids.utils import get_entity_vals, get_kinds
 
 # Name, version, and hosting location of the pipeline
-PIPELINE_NAME = 'mne-study-template'
+PIPELINE_NAME = 'CBD_pipeline'
 VERSION = '0.1.dev0'
-CODE_URL = 'https://github.com/mne-tools/mne-study-template'
+CODE_URL = 'https://github.com/brainthemind/CogBrainDyn_MEG_Pipeline'
 
 # Get the bids_root from an environment variable, raise an error if not found
 bids_root = os.getenv('BIDS_ROOT', False)
+bids_root = '/Users/sophie/Documents/HACKATHON/BIDS_small/'
+
 if not bids_root:
     raise RuntimeError('You need to define an environment variable '
                        '`BIDS_ROOT` pointing to the root of your BIDS dataset')
@@ -37,7 +39,7 @@ subjects_dir = os.path.join(bids_root, 'derivatives', 'freesurfer', 'subjects')
 #   run %matplotlib qt in the command line to get the plots in extra windows
 
 plot = True
-plot = False
+# plot = False
 
 # ``crop``: tuple or None
 # If tuple, (tmin, tmax) to crop the raw data
@@ -99,9 +101,13 @@ subjects_list = get_entity_vals(bids_root, entity_key='sub')
 # a participant (e.g. too many movements, missing blocks, aborted experiment,
 # did not understand the instructions, etc, ...)
 
-exclude_subjects = ['06', '07', '08', '09', '10', '11']
-subjects_list = list(set(subjects_list) - set(exclude_subjects))
+exclude_subjects = ['emptyroom','SB06','SB01'] # 'SB01','SB03','SB04','SB05','SB06', 'SB07', 'SB08', 'SB09', 'SB10', 'SB11','SB12'
+# SB06: Maxfilter error: projections cannot be applied
+# SB01: Events are not correct
 
+
+subjects_list = list(set(subjects_list) - set(exclude_subjects))
+subjects_list.sort()
 
 # ``ch_types``  : list of st
 #    The list of channel types to consider.
@@ -196,7 +202,7 @@ h_freq = 40.
 # ``use_maxwell_filter`` : bool
 #   Use or not maxwell filter to preprocess the data.
 
-use_maxwell_filter = False
+use_maxwell_filter = True
 
 # There are two kinds of maxfiltering: SSS and tSSS
 # [SSS = signal space separation ; tSSS = temporal signal space separation]
@@ -267,9 +273,10 @@ mf_head_origin = 'auto'
 #
 # At NeuroSpin: ct_sparse and sss_call are on the meg_tmp server
 
-# cal_files_path = os.path.join(study_path, 'SSS')
-# mf_ctc_fname = os.path.join(cal_files_path, 'ct_sparse_mgh.fif')
-# mf_cal_fname = os.path.join(cal_files_path, 'sss_cal_mgh.dat')
+# XXX copy the calfiles to BIDS directory when setting up
+cal_files_path ='/Users/sophie/Documents/HACKATHON/system_calibration_files/'
+mf_ctc_fname = os.path.join(cal_files_path, 'ct_sparse_nsp_2017.fif')
+mf_cal_fname = os.path.join(cal_files_path, 'sss_cal_nsp_2017.dat')
 
 # Despite all possible care to avoid movements in the MEG, the participant
 # will likely slowly drift down from the Dewar or slightly shift the head
@@ -311,7 +318,7 @@ mf_reference_run = 0
 # or
 # >>> resample_sfreq = 500  # resample to 500Hz
 
-resample_sfreq = None
+resample_sfreq = 500.
 
 # ``decim`` : int
 #   Says how much to decimate data at the epochs level.
@@ -340,7 +347,9 @@ decim = 1
 # Have a look at your raw data and train yourself to detect a blink, a heart
 # beat and an eye movement.
 # You can do a quick average of blink data and check what the amplitude looks
-# like.
+# like. Make sure to check that the number of epochs rejected, to low rejection
+# thresholds can lead to unnessecary loss of data that could be saved by subsequently 
+# applied corrections (ssp/ ica).
 #
 #  ``reject`` : dict | None
 #    The rejection limits to make some epochs as bads.
@@ -377,7 +386,7 @@ if kind == 'eeg':
 # ~~~~~~~
 # >>> tmin = -0.2  # take 200ms before event onset.
 
-tmin = -0.2
+tmin = -0.6
 
 # ``tmax``: float
 #    A float in seconds that gives the end time before event of an epoch.
@@ -386,7 +395,7 @@ tmin = -0.2
 # ~~~~~~~
 # >>> tmax = 0.5  # take 500ms after event onset.
 
-tmax = 0.5
+tmax = 1.5
 
 # ``trigger_time_shift`` : float | None
 #    If float it specifies the offset for the trigger and the stimulus
@@ -397,7 +406,7 @@ tmax = 0.5
 # ~~~~~~~
 # >>> trigger_time_shift = 0  # don't apply any offset
 
-trigger_time_shift = 0.
+trigger_time_shift = -0.0416
 
 # ``baseline`` : tuple
 #    It specifies how to baseline the epochs; if None, no baseline is applied.
@@ -406,7 +415,10 @@ trigger_time_shift = 0.
 # ~~~~~~~
 # >>> baseline = (None, 0)  # baseline between tmin and 0
 
-baseline = (None, 0)
+# There is an event 500ms prior to the time-locking event, so we want
+# to take a baseline before that
+baseline = (-.6, -.5)  # (None, 0.)
+
 
 # ``stim_channel`` : str
 #    The name of the stimulus channel, which contains the events.
@@ -416,7 +428,7 @@ baseline = (None, 0)
 # >>> stim_channel = 'STI 014'  # or 'STI101'
 
 # XXX not needed if bids events are present
-# stim_channel = 'STI 014'
+#stim_channel = 'STI101'
 
 # ``min_event_duration`` : float
 #    The minimal duration of the events you want to extract (in seconds).
@@ -426,7 +438,7 @@ baseline = (None, 0)
 # >>> min_event_duration = 0.002  # 2 miliseconds
 
 # XXX not needed if bids events are present
-# min_event_duration = 0.002
+#min_event_duration = 0.002
 
 #  `event_id`` : dict
 #    Dictionary that maps events (trigger/marker values)
@@ -438,7 +450,8 @@ baseline = (None, 0)
 # or
 # >>> event_id = {'Onset': 4} with conditions = ['Onset']
 
-# event_id = {'auditory/left': 1, 'auditory/right': 2}
+#event_id = {'incoherent/1': 33, 'incoherent/2': 35,
+#            'coherent/down': 37, 'coherent/up': 39}
 
 #  `conditions`` : dict
 #    List of condition names to consider. Must match the keys
@@ -451,7 +464,7 @@ baseline = (None, 0)
 # >>> conditions = ['left', 'right']
 
 # conditions = ['left', 'right']
-conditions = [None]
+conditions = ['incoherent', 'coherent']
 
 ###############################################################################
 # ARTIFACT REMOVAL
@@ -468,12 +481,12 @@ conditions = [None]
 # ``use_ssp`` : bool
 #    If True ICA should be used or not.
 
-use_ssp = True
+use_ssp = False
 
 # ``use_ica`` : bool
 #    If True ICA should be used or not.
 
-use_ica = False
+use_ica = True
 
 if kind == 'eeg':
     use_ssp = False
@@ -501,9 +514,20 @@ def default_reject_comps_factory():
 rejcomps_man = defaultdict(default_reject_comps_factory)
 
 # ``ica_ctps_ecg_threshold``: float
-#    The threshold parameter passed to `find_bads_ecg` method.
+#   The threshold parameter passed to `find_bads_ecg` method.
+#   This method automatically computes ECG events (heart-rate related artifacts,
+#   and finds ICA components that correlate with these. Components above the 
+#   specified threshold are rejected.)
 
 ica_ctps_ecg_threshold = 0.1
+
+# ``ica_ctps_eog_threshold``: float
+#   The threshold parameter passed to `find_bads_eog` method.
+#   This method automatically computes EOG events (eye-blink/-movementg related 
+#   artifacts, and finds ICA components that correlate with these. 
+#   Components above the specified threshold are rejected.)
+
+ica_ctps_eog_threshold = 3.
 
 ###############################################################################
 # DECODING
@@ -594,7 +618,8 @@ method = 'dSPM'
 
 smooth = 10
 
-fsaverage_vertices = [np.arange(10242), np.arange(10242)]
+# XXX is this used anywhere?
+# fsaverage_vertices = [np.arange(10242), np.arange(10242)]
 
 # if not os.path.isdir(study_path):
 #     os.mkdir(study_path)
@@ -606,14 +631,14 @@ fsaverage_vertices = [np.arange(10242), np.arange(10242)]
 # ADVANCED
 # --------
 #
-# ``l_trans_bandwidth`` : float | 'auto'
+# ``l_trans_bandwidth`` : float | 'auto'
 #    A float that specifies the transition bandwidth of the
 #    highpass filter. By default it's `'auto'` and uses default mne
 #    parameters.
 
 l_trans_bandwidth = 'auto'
 
-#  ``h_trans_bandwidth`` : float | 'auto'
+#  ``h_trans_bandwidth`` : float | 'auto'
 #    A float that specifies the transition bandwidth of the
 #    lowpass filter. By default it's `'auto'` and uses default mne
 #    parameters.
@@ -636,7 +661,7 @@ random_state = 42
 #    Minimum number of samples an event must last. If the
 #    duration is less than this an exception will be raised.
 
-shortest_event = 1
+#shortest_event = 1
 
 # ``allow_maxshield``  : bool
 #    To import data that was recorded with Maxshield on before running

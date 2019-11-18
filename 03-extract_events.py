@@ -48,18 +48,14 @@ def run_events(subject, run=None, session=None):
     # Prepare a name to save the data
     fpath_deriv = op.join(config.bids_root, 'derivatives',
                           config.PIPELINE_NAME, subject_path)
-    if config.use_maxwell_filter:
-        raw_fname_in = \
-            op.join(fpath_deriv, bids_basename + '_sss_raw.fif')
-    else:
-        raw_fname_in = \
+    raw_fname_in = \
             op.join(fpath_deriv, bids_basename + '_filt_raw.fif')
-
+    
     eve_fname_out = op.join(fpath_deriv, bids_basename + '-eve.fif')
 
     raw = mne.io.read_raw_fif(raw_fname_in)
     events, event_id = mne.events_from_annotations(raw)
-
+    
     if config.trigger_time_shift:
         events = mne.event.shift_time_events(events,
                                              np.unique(events[:, 2]),

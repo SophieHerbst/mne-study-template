@@ -75,11 +75,7 @@ def apply_ica(subject, run, session):
                                        space=config.space
                                        )
 
-    if config.use_maxwell_filter:
-        raw_fname_in = \
-            op.join(fpath_deriv, bids_basename + '_sss_raw.fif')
-    else:
-        raw_fname_in = \
+    raw_fname_in = \
             op.join(fpath_deriv, bids_basename + '_filt_raw.fif')
 
     raw = mne.io.read_raw_fif(raw_fname_in, preload=True)
@@ -176,7 +172,7 @@ def apply_ica(subject, run, session):
                                            tmax=0.5)
 
             eog_average = eog_epochs.average()
-            eog_inds, scores = ica.find_bads_eog(eog_epochs, threshold=3.0)
+            eog_inds, scores = ica.find_bads_eog(eog_epochs, threshold=config.ica_ctps_eog_threshold)
             del eog_epochs
 
             params = dict(exclude=eog_inds, show=config.plot)
